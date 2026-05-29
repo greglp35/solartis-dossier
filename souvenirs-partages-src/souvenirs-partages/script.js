@@ -17,6 +17,18 @@ const demoEvents = [
   }
 ];
 
+const videoDurations = ["0:14", "0:32", "1:05", "0:47", "0:22", "0:58"];
+
+function assignVideoMeta(item) {
+  if (!("isVideo" in item)) {
+    item.isVideo = Math.random() < 0.2;
+    if (item.isVideo) {
+      item.duration = videoDurations[Math.floor(Math.random() * videoDurations.length)];
+    }
+  }
+  return item;
+}
+
 let demoGallery = [
   { title: "Cérémonie", category: "recent", favorite: true, icon: "💍" },
   { title: "Cocktail", category: "recent", favorite: false, icon: "🥂" },
@@ -26,7 +38,7 @@ let demoGallery = [
   { title: "Soirée", category: "recent", favorite: false, icon: "🪩" },
   { title: "Discours", category: "favorite", favorite: true, icon: "🎤" },
   { title: "Décoration", category: "recent", favorite: false, icon: "💐" }
-];
+].map(assignVideoMeta);
 
 const gradients = [
   ["#7c3aed", "#ec4899"],
@@ -49,6 +61,22 @@ const uploadLabels = [
   "Danse", "Buffet", "Photo de nuit"
 ];
 const uploadIcons = ["🤳", "💫", "🎉", "💃", "🍰", "🌃"];
+
+const liveGuestNames = ["Sophie M.", "Thomas L.", "Emma R.", "Lucas B.", "Marie C.", "Antoine D.", "Julie P."];
+const livePhotoTitles = ["Selfie du groupe", "Vue panoramique", "Moment inattendu", "Les mariés !", "Table de fête", "Fin de soirée", "Coup de coeur"];
+const livePhotoIcons = ["🤳", "🌅", "😄", "💕", "🍾", "🌙", "❤️"];
+
+const sampleComments = [
+  { author: "Sophie M.", text: "Trop beau ce moment ! 😍" },
+  { author: "Thomas L.", text: "Super photo !" },
+  { author: "Emma R.", text: "J'adore cette photo 💕" },
+  { author: "Lucas B.", text: "Merci pour ce souvenir !" },
+  { author: "Marie C.", text: "Magnifique ✨" },
+  { author: "Antoine D.", text: "Photo du tonnerre 🎉" }
+];
+
+// Comments storage: Map<cardIndex, Array<{author, text}>>
+const commentsMap = new Map();
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
@@ -79,6 +107,11 @@ const exportLabel = document.querySelector("#export-label");
 const modLog = document.querySelector("#moderation-log");
 const modCount = document.querySelector("#mod-count");
 const albumResult = document.querySelector(".album-result");
+const consentOverlay = document.querySelector("#consent-overlay");
+const consentCheck = document.querySelector("#consent-check");
+const consentAccept = document.querySelector("#consent-accept");
+const consentDecline = document.querySelector("#consent-decline");
+const mainEl = document.querySelector("#main");
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
@@ -88,6 +121,7 @@ let toastTimer = null;
 let modActionCount = 0;
 let isUploading = false;
 let isExporting = false;
+let liveInterval = null;
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -103,7 +137,6 @@ function generateAlbumCode() {
 function showToast(message, type = 'success') {
   clearTimeout(toastTimer);
   toast.textContent = message;
-  // Remove all type classes
   toast.classList.remove('toast-success', 'toast-info', 'toast-warn', 'toast-error');
   toast.classList.add('toast-' + type);
   toast.classList.add("show");
@@ -130,6 +163,7 @@ function updateGalleryCount() {
   const visible = demoGallery.filter((item) => {
     if (currentFilter === "all") return true;
     if (currentFilter === "favorite") return item.favorite;
+    if (currentFilter === "video") return item.isVideo === true;
     return item.category === currentFilter;
   });
   const n = visible.length;
@@ -141,7 +175,6 @@ function updateGalleryCount() {
 function logModerationAction(title, action) {
   modActionCount++;
 
-  // Remove empty placeholder if present
   const emptyMsg = modLog.querySelector(".mod-empty");
   if (emptyMsg) emptyMsg.remove();
 
@@ -158,7 +191,6 @@ function logModerationAction(title, action) {
   const plural = modActionCount > 1 ? "signalements" : "signalement";
   modCount.textContent = modActionCount + " " + plural;
 
-  // Scroll log to top
   modLog.scrollTop = 0;
 }
 
@@ -170,6 +202,7 @@ function renderGallery() {
   const items = demoGallery.filter((item) => {
     if (currentFilter === "all") return true;
     if (currentFilter === "favorite") return item.favorite;
+    if (currentFilter === "video") return item.isVideo === true;
     return item.category === currentFilter;
   });
 
@@ -178,23 +211,64 @@ function renderGallery() {
     const author = randomFrom(guestNames);
     const mins = randomMinutes();
 
+    // Initialise comments for this card if not already done
+    const globalIndex = demoGallery.indexOf(item);
+    const cardKey = globalIndex !== -1 ? globalIndex : index;
+    if (!commentsMap.has(cardKey)) {
+      const count = Math.floor(Math.random() * 3); // 0, 1, or 2
+      const initialComments = [];
+      const shuffled = [...sampleComments].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < count; i++) {
+        initialComments.push(shuffled[i]);
+      }
+      commentsMap.set(cardKey, initialComments);
+    }
+    const cardComments = commentsMap.get(cardKey);
+
     const card = document.createElement("article");
-    card.className = "photo-card";
+    card.className = "photo-card" + (item.isVideo ? " is-video" : "");
     card.style.animationDelay = (index * 0.05) + "s";
-    // Store the item reference for moderation actions
     card.dataset.title = item.title;
+    card.dataset.cardIndex = cardKey;
+
+    // Build category label
+    let categoryLabel;
+    if (item.isVideo) {
+      categoryLabel = "Vidéo";
+    } else if (item.category === "recent") {
+      categoryLabel = "Récent";
+    } else {
+      categoryLabel = "Favori";
+    }
+
+    // Duration badge for videos
+    const durationBadge = item.isVideo ? `<span class="video-duration">${item.duration || "0:30"}</span>` : "";
+
+    // Build comment items HTML
+    const commentsHtml = cardComments.map(c =>
+      `<div class="comment-item"><span class="comment-author">${c.author}</span><span class="comment-text">${c.text}</span></div>`
+    ).join("");
 
     card.innerHTML = `
       <div class="photo-visual" style="--gradient-a:${gradient[0]};--gradient-b:${gradient[1]}">
         <span aria-hidden="true">${item.icon || "📷"}</span>
+        ${durationBadge}
       </div>
       <div class="photo-body">
         <strong>${item.title}</strong>
         <div class="photo-meta">
-          <span>${item.category === "recent" ? "Récent" : "Favori"}</span>
+          <span>${categoryLabel}</span>
           <span>${item.favorite ? "★" : "☆"}</span>
         </div>
         <p class="photo-author">${author} · il y a ${mins} min</p>
+        <button class="comment-toggle" data-toggle="comments">💬 <span class="comment-count">${cardComments.length}</span> commentaire(s)</button>
+      </div>
+      <div class="photo-comments">
+        <div class="comment-list">${commentsHtml}</div>
+        <div class="comment-form">
+          <input class="comment-input" type="text" placeholder="Ajouter un commentaire…" aria-label="Ajouter un commentaire" />
+          <button class="comment-submit" type="button">Envoyer</button>
+        </div>
       </div>
       <div class="photo-actions">
         <button class="photo-action-btn hide" data-action="hide" aria-label="Masquer la photo">Masquer</button>
@@ -202,7 +276,7 @@ function renderGallery() {
       </div>
     `;
 
-    // Moderation button handlers
+    // Moderation buttons
     const hideBtn = card.querySelector("[data-action='hide']");
     const deleteBtn = card.querySelector("[data-action='delete']");
 
@@ -222,20 +296,71 @@ function renderGallery() {
 
     deleteBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      // Animate out
       card.style.transition = "opacity 0.3s, transform 0.3s";
       card.style.opacity = "0";
       card.style.transform = "scale(0.9)";
 
       setTimeout(() => {
         card.remove();
-        // Remove from data array
         const idx = demoGallery.findIndex((g) => g.title === item.title);
         if (idx !== -1) demoGallery.splice(idx, 1);
         logModerationAction(item.title, "delete");
         updateGalleryCount();
       }, 300);
     });
+
+    // Comment toggle button
+    const commentToggle = card.querySelector("[data-toggle='comments']");
+    commentToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      card.classList.toggle("comments-open");
+    });
+
+    // Comment form submit
+    const commentInput = card.querySelector(".comment-input");
+    const commentSubmit = card.querySelector(".comment-submit");
+    const commentList = card.querySelector(".comment-list");
+    const commentCount = card.querySelector(".comment-count");
+
+    commentSubmit.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const text = commentInput.value.trim();
+      if (!text) return;
+
+      const newComment = { author: "Vous", text };
+      cardComments.push(newComment);
+
+      const newItem = document.createElement("div");
+      newItem.className = "comment-item";
+      newItem.innerHTML = `<span class="comment-author">Vous</span><span class="comment-text">${text}</span>`;
+      commentList.appendChild(newItem);
+      commentList.scrollTop = commentList.scrollHeight;
+
+      commentCount.textContent = cardComments.length;
+      commentInput.value = "";
+      showToast("Commentaire ajouté.", 'success');
+    });
+
+    commentInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        commentSubmit.click();
+      }
+    });
+
+    // Video card click
+    if (item.isVideo) {
+      card.addEventListener("click", (e) => {
+        if (
+          e.target.closest("[data-action]") ||
+          e.target.closest("[data-toggle='comments']") ||
+          e.target.closest(".comment-form") ||
+          e.target.closest(".comment-input") ||
+          e.target.closest(".comment-submit")
+        ) return;
+        showToast("▶ Lecture vidéo simulée — fonctionnalité disponible dans la version complète.", 'info');
+      });
+    }
 
     galleryGrid.appendChild(card);
   });
@@ -259,13 +384,11 @@ function handleAlbumSubmit(event) {
   const newCode = generateAlbumCode();
   const link = createAlbumLink(newCode);
 
-  // 1. Loading state
   albumResult.classList.add("loading");
   statusBadge.classList.remove("active");
   statusBadge.textContent = "Création…";
 
   setTimeout(() => {
-    // 2. Apply result
     albumResult.classList.remove("loading");
 
     currentAlbumCode = newCode;
@@ -282,16 +405,13 @@ function handleAlbumSubmit(event) {
     albumCodeEl.textContent = currentAlbumCode;
     albumLinkEl.textContent = link;
 
-    // Update status badge
     statusBadge.textContent = "Album actif";
     statusBadge.classList.add("active");
 
-    // Update QR event name
     qrEventName.textContent = eventName || "Votre événement";
 
-    // Reveal animations
     albumResult.classList.remove("revealed");
-    void albumResult.offsetWidth; // force reflow
+    void albumResult.offsetWidth;
     albumResult.classList.add("revealed");
 
     const resultCode = document.querySelector("#album-code");
@@ -302,6 +422,9 @@ function handleAlbumSubmit(event) {
     document.querySelector(".qr-card").classList.add("glowing");
 
     showToast("Album créé avec succès.", 'success');
+
+    // Start live gallery simulation
+    setupLiveGallery();
   }, 1200);
 }
 
@@ -332,12 +455,14 @@ function addFakePhoto() {
   const icons = ["📸", "😊", "🍽️", "👥", "🎁", "🌙"];
   const randomIndex = Math.floor(Math.random() * labels.length);
 
-  demoGallery.unshift({
+  const newItem = {
     title: labels[randomIndex],
     category: "recent",
     favorite: Math.random() > 0.55,
     icon: icons[randomIndex]
-  });
+  };
+  assignVideoMeta(newItem);
+  demoGallery.unshift(newItem);
 
   currentFilter = "all";
   filterButtons.forEach((button) => {
@@ -368,7 +493,7 @@ function runUploadSimulation() {
   progressLabel.textContent = "0%";
 
   const interval = setInterval(() => {
-    pct += Math.floor(Math.random() * 4) + 3; // 3-6% per step
+    pct += Math.floor(Math.random() * 4) + 3;
     if (pct >= 100) pct = 100;
 
     progressBar.style.setProperty("--progress", pct + "%");
@@ -378,7 +503,6 @@ function runUploadSimulation() {
       clearInterval(interval);
 
       setTimeout(() => {
-        // Reset UI
         uploadZone.classList.remove("uploading");
         uploadProgress.classList.remove("active");
         uploadProgress.setAttribute("aria-hidden", "true");
@@ -386,14 +510,15 @@ function runUploadSimulation() {
         progressLabel.textContent = "0%";
         isUploading = false;
 
-        // Add photo to gallery
         const randomIndex = Math.floor(Math.random() * uploadLabels.length);
-        demoGallery.unshift({
+        const newItem = {
           title: uploadLabels[randomIndex],
           category: "recent",
           favorite: false,
           icon: uploadIcons[randomIndex]
-        });
+        };
+        assignVideoMeta(newItem);
+        demoGallery.unshift(newItem);
 
         currentFilter = "all";
         filterButtons.forEach((button) => {
@@ -407,14 +532,123 @@ function runUploadSimulation() {
   }, 50);
 }
 
+// ── Consent modal ─────────────────────────────────────────────────────────────
+
+function openConsentModal() {
+  if (currentAlbumCode === "SP----") {
+    showToast("Créez d'abord un album.", 'warn');
+    return;
+  }
+  consentCheck.checked = false;
+  consentAccept.disabled = true;
+  consentOverlay.removeAttribute("hidden");
+  mainEl.setAttribute("aria-hidden", "true");
+
+  // Trap focus: collect focusable elements
+  trapFocusInModal();
+
+  // Return focus target saved
+  consentOverlay._returnFocus = uploadZone;
+}
+
+function closeConsentModal() {
+  consentOverlay.setAttribute("hidden", "");
+  mainEl.removeAttribute("aria-hidden");
+
+  // Restore focus
+  if (consentOverlay._returnFocus) {
+    consentOverlay._returnFocus.focus();
+  }
+}
+
+function trapFocusInModal() {
+  const focusable = Array.from(
+    consentOverlay.querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])')
+  ).filter(el => !el.disabled);
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (first) first.focus();
+
+  consentOverlay._trapHandler = function(e) {
+    if (e.key !== "Tab") return;
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
+  consentOverlay.addEventListener("keydown", consentOverlay._trapHandler);
+}
+
+function setupConsentModal() {
+  // Checkbox toggles accept button
+  consentCheck.addEventListener("change", () => {
+    consentAccept.disabled = !consentCheck.checked;
+  });
+
+  // Accept: close modal, run upload
+  consentAccept.addEventListener("click", () => {
+    closeConsentModal();
+    if (consentOverlay._trapHandler) {
+      consentOverlay.removeEventListener("keydown", consentOverlay._trapHandler);
+    }
+    runUploadSimulation();
+  });
+
+  // Decline: close modal, info toast
+  consentDecline.addEventListener("click", () => {
+    closeConsentModal();
+    if (consentOverlay._trapHandler) {
+      consentOverlay.removeEventListener("keydown", consentOverlay._trapHandler);
+    }
+    showToast("Upload annulé.", 'info');
+  });
+
+  // Overlay background click closes
+  consentOverlay.addEventListener("click", (e) => {
+    if (e.target === consentOverlay) {
+      closeConsentModal();
+      if (consentOverlay._trapHandler) {
+        consentOverlay.removeEventListener("keydown", consentOverlay._trapHandler);
+      }
+      showToast("Upload annulé.", 'info');
+    }
+  });
+
+  // Escape key closes
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !consentOverlay.hasAttribute("hidden")) {
+      closeConsentModal();
+      if (consentOverlay._trapHandler) {
+        consentOverlay.removeEventListener("keydown", consentOverlay._trapHandler);
+      }
+      showToast("Upload annulé.", 'info');
+    }
+  });
+}
+
 function setupUploadZone() {
-  uploadZone.addEventListener("click", runUploadSimulation);
+  // Upload zone and mock button open consent modal instead of running upload directly
+  uploadZone.addEventListener("click", openConsentModal);
   uploadZone.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      runUploadSimulation();
+      openConsentModal();
     }
   });
+
+  const mockBtn = document.querySelector("#mock-upload-btn");
+  if (mockBtn) {
+    mockBtn.addEventListener("click", openConsentModal);
+  }
 }
 
 // ── Export ZIP simulation ─────────────────────────────────────────────────────
@@ -460,7 +694,50 @@ function runExportSimulation() {
     const step = steps[stepIndex];
     exportBar.style.width = step.pct + "%";
     exportLabel.textContent = step.label;
-  }, 290); // ~2s total over 7 steps
+  }, 290);
+}
+
+// ── Live gallery ──────────────────────────────────────────────────────────────
+
+function setupLiveGallery() {
+  // Clear old interval if any
+  if (liveInterval) {
+    clearInterval(liveInterval);
+    liveInterval = null;
+  }
+
+  if (currentAlbumCode === "SP----") return;
+
+  const scheduleNext = () => {
+    const delay = (Math.random() * 10000) + 8000; // 8–18 seconds
+    liveInterval = setTimeout(() => {
+      // If album changed, stop
+      if (currentAlbumCode === "SP----") return;
+
+      const titleIdx = Math.floor(Math.random() * livePhotoTitles.length);
+      const guest = randomFrom(liveGuestNames);
+      const newItem = {
+        title: livePhotoTitles[titleIdx],
+        category: "recent",
+        favorite: Math.random() > 0.6,
+        icon: livePhotoIcons[titleIdx]
+      };
+      assignVideoMeta(newItem);
+      demoGallery.unshift(newItem);
+
+      if (currentFilter === "all" || currentFilter === "recent" || (currentFilter === "video" && newItem.isVideo)) {
+        renderGallery();
+      } else {
+        updateGalleryCount();
+      }
+
+      showToast(`📸 ${guest} vient d'ajouter une photo !`, 'info');
+
+      scheduleNext();
+    }, delay);
+  };
+
+  scheduleNext();
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
@@ -568,7 +845,6 @@ function setupLivePreview() {
 function setupScrollReveal() {
   const sections = document.querySelectorAll('.section');
 
-  // Skip the first section (hero) from reveal-hidden
   sections.forEach((s, i) => {
     if (i !== 0) {
       s.classList.add('reveal-hidden');
@@ -602,5 +878,6 @@ setupTheme();
 setupMenu();
 setupLivePreview();
 setupUploadZone();
+setupConsentModal();
 renderGallery();
 setupScrollReveal();

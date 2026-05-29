@@ -88,7 +88,7 @@
                 <span class="tile t5">💌</span>
                 <span class="tile t6">✨</span>
               </div>
-              <button class="mock-button" type="button">Ajouter mes photos</button>
+              <button class="mock-button" type="button" id="mock-upload-btn">Ajouter mes photos</button>
             </div>
           </div>
 
@@ -260,11 +260,18 @@
           <button class="filter-btn active" type="button" data-filter="all">Toutes</button>
           <button class="filter-btn" type="button" data-filter="recent">Récentes</button>
           <button class="filter-btn" type="button" data-filter="favorite">Favorites</button>
+          <button class="filter-btn" type="button" data-filter="video">Vidéos</button>
           <button class="btn btn-secondary add-photo-btn" type="button" id="add-photo">+ Ajouter une photo</button>
           <button class="btn btn-ghost export-btn" type="button" id="export-zip">⬇ Exporter ZIP</button>
         </div>
 
-        <p class="gallery-count" id="gallery-count" aria-live="polite">8 souvenirs dans cet album</p>
+        <div class="gallery-toolbar-meta">
+          <p class="gallery-count" id="gallery-count" aria-live="polite">8 souvenirs dans cet album</p>
+          <div class="live-indicator" id="live-indicator">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span>Galerie en direct</span>
+          </div>
+        </div>
 
         <div class="gallery-grid" id="gallery-grid" aria-live="polite"></div>
 
@@ -458,6 +465,31 @@
       </div>
     </div>
   </footer>
+
+  <!-- Modal consentement invité -->
+  <div class="modal-overlay" id="consent-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title" hidden>
+    <div class="modal-box">
+      <div class="modal-icon" aria-hidden="true">🔒</div>
+      <h2 id="consent-title">Avant de partager vos photos</h2>
+      <p class="modal-text">
+        En ajoutant vos photos à cet album, vous confirmez que vous êtes l'auteur des contenus
+        et que vous consentez à leur partage privé avec les autres invités de l'événement.
+      </p>
+      <ul class="consent-list">
+        <li>✓ Album accessible uniquement aux personnes invitées</li>
+        <li>✓ Vos photos ne seront pas partagées publiquement</li>
+        <li>✓ Vous pouvez demander la suppression à tout moment</li>
+      </ul>
+      <label class="consent-check-label">
+        <input type="checkbox" id="consent-check" />
+        <span>J'ai lu et j'accepte les conditions de partage</span>
+      </label>
+      <div class="modal-actions">
+        <button class="btn btn-primary full-width" id="consent-accept" disabled>Ajouter mes photos</button>
+        <button class="btn btn-ghost full-width" id="consent-decline">Annuler</button>
+      </div>
+    </div>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

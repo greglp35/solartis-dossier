@@ -1656,3 +1656,237 @@ select:focus {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Gallery toolbar meta ── */
+.gallery-toolbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── Live indicator ── */
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #059669;
+  margin-left: auto;
+  padding: 0.4rem 0.8rem;
+  background: rgba(16,185,129,0.10);
+  border-radius: 999px;
+  border: 1px solid rgba(16,185,129,0.25);
+}
+@keyframes livePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.5); opacity: 0.5; }
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: #059669;
+  border-radius: 50%;
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+
+/* ── Modal consentement ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(15,16,32,0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay:not([hidden]) {
+  opacity: 1;
+}
+.modal-overlay[hidden] {
+  display: none;
+}
+.modal-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: var(--shadow-soft);
+  transform: translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-overlay:not([hidden]) .modal-box {
+  transform: translateY(0);
+}
+.modal-icon {
+  font-size: 2.4rem;
+  margin-bottom: 0.8rem;
+}
+.modal-box h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.8rem;
+}
+.modal-text {
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+.consent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.consent-list li {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  padding: 0.4rem 0.7rem;
+  background: rgba(16,185,129,0.08);
+  border-radius: 10px;
+}
+.consent-check-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+  padding: 0.8rem;
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  transition: border-color 0.2s;
+}
+.consent-check-label:has(input:checked) {
+  border-color: var(--color-primary);
+  background: rgba(124,58,237,0.05);
+}
+.consent-check-label input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  accent-color: var(--color-primary);
+}
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* ── Commentaires photo ── */
+.photo-comments {
+  border-top: 1px solid var(--color-line);
+  padding: 0.6rem 0.9rem;
+  display: none;
+}
+.photo-card.comments-open .photo-comments {
+  display: block;
+}
+.comment-list {
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 0.5rem;
+}
+.comment-item {
+  font-size: 0.82rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--color-line);
+  display: flex;
+  gap: 0.4rem;
+}
+.comment-item:last-child { border-bottom: 0; }
+.comment-author { font-weight: 700; color: var(--color-text); white-space: nowrap; }
+.comment-text   { color: var(--color-muted); }
+.comment-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+.comment-input {
+  flex: 1;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  width: auto;
+}
+.comment-input:focus {
+  border-color: var(--color-primary);
+}
+.comment-submit {
+  border: 0;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.comment-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  font-weight: 600;
+  padding: 0.2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.comment-toggle:hover { color: var(--color-primary); }
+
+/* ── Video cards ── */
+.photo-card.is-video .photo-visual::after {
+  content: '▶';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.88);
+  color: var(--color-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  pointer-events: none;
+}
+.photo-visual {
+  position: relative;
+}
+.video-duration {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+}
+
+/* Play button hover */
+.photo-card.is-video:hover .photo-visual::after {
+  background: var(--color-primary);
+  color: white;
+  transform: translate(-50%, -50%) scale(1.1);
+  transition: all 0.2s ease;
+}
