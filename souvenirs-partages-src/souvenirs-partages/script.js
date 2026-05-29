@@ -100,9 +100,12 @@ function generateAlbumCode() {
   return code;
 }
 
-function showToast(message) {
+function showToast(message, type = 'success') {
   clearTimeout(toastTimer);
   toast.textContent = message;
+  // Remove all type classes
+  toast.classList.remove('toast-success', 'toast-info', 'toast-warn', 'toast-error');
+  toast.classList.add('toast-' + type);
   toast.classList.add("show");
   toastTimer = setTimeout(() => {
     toast.classList.remove("show");
@@ -286,7 +289,19 @@ function handleAlbumSubmit(event) {
     // Update QR event name
     qrEventName.textContent = eventName || "Votre événement";
 
-    showToast("Album créé avec succès.");
+    // Reveal animations
+    albumResult.classList.remove("revealed");
+    void albumResult.offsetWidth; // force reflow
+    albumResult.classList.add("revealed");
+
+    const resultCode = document.querySelector("#album-code");
+    resultCode.classList.remove("popped");
+    void resultCode.offsetWidth;
+    resultCode.classList.add("popped");
+
+    document.querySelector(".qr-card").classList.add("glowing");
+
+    showToast("Album créé avec succès.", 'success');
   }, 1200);
 }
 
@@ -298,9 +313,15 @@ async function copyAlbumLink() {
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(link);
     }
-    showToast("Lien copié.");
+    showToast("Lien copié.", 'success');
+    copyLinkBtn.classList.add('copied');
+    copyLinkBtn.textContent = '✓ Copié';
+    setTimeout(() => {
+      copyLinkBtn.classList.remove('copied');
+      copyLinkBtn.textContent = 'Copier';
+    }, 1500);
   } catch (error) {
-    showToast("Copie impossible dans ce navigateur.");
+    showToast("Copie impossible dans ce navigateur.", 'error');
   }
 }
 
@@ -324,7 +345,7 @@ function addFakePhoto() {
   });
 
   renderGallery();
-  showToast("Photo fictive ajoutée.");
+  showToast("Photo fictive ajoutée.", 'success');
 }
 
 // ── Upload simulation ─────────────────────────────────────────────────────────
@@ -333,7 +354,7 @@ function runUploadSimulation() {
   if (isUploading) return;
 
   if (currentAlbumCode === "SP----") {
-    showToast("Créez d'abord un album.");
+    showToast("Créez d'abord un album.", 'warn');
     return;
   }
 
@@ -380,7 +401,7 @@ function runUploadSimulation() {
         });
 
         renderGallery();
-        showToast("Photo uploadée par un invité !");
+        showToast("Photo uploadée par un invité !", 'success');
       }, 400);
     }
   }, 50);
@@ -430,7 +451,7 @@ function runExportSimulation() {
         exportBar.style.width = "0%";
         exportLabel.textContent = "Préparation du ZIP… 0%";
         isExporting = false;
-        showToast("ZIP prêt — 47 fichiers exportés.");
+        showToast("ZIP prêt — 47 fichiers exportés.", 'success');
       }, 1000);
 
       return;
@@ -486,7 +507,7 @@ function setupFaq() {
 function setupToastButtons() {
   document.querySelectorAll("[data-toast]").forEach((button) => {
     button.addEventListener("click", () => {
-      showToast(button.dataset.toast);
+      showToast(button.dataset.toast, 'info');
     });
   });
 }
@@ -510,7 +531,7 @@ function setupTheme() {
     themeToggle.setAttribute("aria-label", isDark ? "Activer le mode clair" : "Activer le mode sombre");
     localStorage.setItem("souvenirs-theme", isDark ? "dark" : "light");
 
-    showToast(isDark ? "Mode sombre activé." : "Mode clair activé.");
+    showToast(isDark ? "Mode sombre activé." : "Mode clair activé.", 'info');
   });
 }
 
@@ -542,6 +563,31 @@ function setupLivePreview() {
   });
 }
 
+// ── Scroll reveal with IntersectionObserver ───────────────────────────────────
+
+function setupScrollReveal() {
+  const sections = document.querySelectorAll('.section');
+
+  // Skip the first section (hero) from reveal-hidden
+  sections.forEach((s, i) => {
+    if (i !== 0) {
+      s.classList.add('reveal-hidden');
+    }
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.remove('reveal-hidden');
+        entry.target.classList.add('reveal-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  sections.forEach(s => observer.observe(s));
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 form.addEventListener("submit", handleAlbumSubmit);
@@ -557,3 +603,4 @@ setupMenu();
 setupLivePreview();
 setupUploadZone();
 renderGallery();
+setupScrollReveal();
