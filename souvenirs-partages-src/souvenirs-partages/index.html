@@ -26,6 +26,7 @@
       <div class="nav-links" id="nav-links">
         <a href="#fonctionnement">Fonctionnement</a>
         <a href="#demo">Démo</a>
+        <a href="#dashboard">Dashboard</a>
         <a href="#securite">Sécurité</a>
         <a href="#tarifs">Tarifs</a>
         <a href="#faq">FAQ</a>
@@ -138,6 +139,80 @@
       </div>
     </section>
 
+    <!-- Vue invité simulée — FEATURE 2 -->
+    <section class="section" id="vue-invite">
+      <div class="container">
+        <div class="section-heading compact">
+          <p class="eyebrow">Côté invité</p>
+          <h2>Une expérience ultra-simple pour vos proches</h2>
+          <p>Voici ce que voit un invité après avoir scanné le QR code. Aucune installation, aucun compte.</p>
+        </div>
+
+        <div class="guest-view-demo">
+          <!-- Guest phone mockup -->
+          <div class="guest-phone-wrap">
+            <div class="phone-mockup guest-phone" aria-label="Vue invité simulée">
+              <div class="phone-top"></div>
+              <div class="phone-screen guest-screen">
+                <div class="guest-app-bar">
+                  <span class="guest-lock">🔒</span>
+                  <span>Album privé · SP-84K2</span>
+                </div>
+                <div class="guest-welcome">
+                  <div class="guest-avatar" aria-hidden="true">💐</div>
+                  <h3 class="guest-event-title">Mariage de Léa &amp; Thomas</h3>
+                  <p class="guest-event-sub">14 juin 2025 · 128 photos · 46 invités</p>
+                </div>
+                <div class="guest-upload-area">
+                  <span aria-hidden="true">📷</span>
+                  <p>Appuyez pour ajouter vos photos</p>
+                </div>
+                <div class="guest-mini-gallery">
+                  <span class="gtile" style="background:linear-gradient(135deg,#fbcfe8,#f9a8d4)">💍</span>
+                  <span class="gtile" style="background:linear-gradient(135deg,#ddd6fe,#c4b5fd)">🥂</span>
+                  <span class="gtile" style="background:linear-gradient(135deg,#bbf7d0,#86efac)">🎶</span>
+                  <span class="gtile" style="background:linear-gradient(135deg,#bae6fd,#7dd3fc)">💌</span>
+                </div>
+                <p class="guest-footer">Propulsé par SouvenirsPartagés · Aucune app requise</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Steps list -->
+          <div class="guest-steps">
+            <div class="guest-step">
+              <span class="guest-step-num">1</span>
+              <div>
+                <strong>Scan du QR code</strong>
+                <p>L'invité scanne le QR code depuis l'appareil photo de son téléphone. Le navigateur s'ouvre automatiquement.</p>
+              </div>
+            </div>
+            <div class="guest-step">
+              <span class="guest-step-num">2</span>
+              <div>
+                <strong>Consentement en un tap</strong>
+                <p>Un écran simple demande l'accord de l'invité avant tout partage. Aucun compte, aucune inscription.</p>
+              </div>
+            </div>
+            <div class="guest-step">
+              <span class="guest-step-num">3</span>
+              <div>
+                <strong>Ajout des photos</strong>
+                <p>L'invité sélectionne ses photos depuis sa galerie. Elles apparaissent immédiatement dans l'album.</p>
+              </div>
+            </div>
+            <div class="guest-step">
+              <span class="guest-step-num">4</span>
+              <div>
+                <strong>Galerie partagée</strong>
+                <p>L'invité peut voir les photos des autres et laisser un commentaire. La galerie se remplit en direct.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="benefices">
       <div class="container">
         <div class="section-heading compact">
@@ -231,9 +306,27 @@
           </div>
 
           <div class="result-actions">
-            <button class="btn btn-secondary" type="button" data-toast="QR code prêt à imprimer.">Télécharger le QR</button>
-            <button class="btn btn-ghost" type="button" data-toast="Carte envoyée à l'impression.">Imprimer la carte</button>
+            <button class="btn btn-secondary" type="button" id="btn-download-qr">⬇ Télécharger le QR</button>
+            <button class="btn btn-ghost" type="button" data-toast="Carte envoyée à l'impression.">🖨 Imprimer</button>
           </div>
+
+          <div class="share-row">
+            <span class="share-label">Partager l'invitation :</span>
+            <div class="share-buttons">
+              <button class="share-btn whatsapp" type="button" id="share-whatsapp" aria-label="Partager sur WhatsApp">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              </button>
+              <button class="share-btn email" type="button" id="share-email" aria-label="Partager par e-mail">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+              </button>
+              <button class="share-btn link" type="button" id="share-native" aria-label="Partager le lien">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Hidden canvas for QR download -->
+          <canvas id="qr-canvas" style="display:none" aria-hidden="true"></canvas>
 
           <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Simuler l'ajout d'une photo">
             <span class="upload-icon" aria-hidden="true">📤</span>
@@ -322,6 +415,105 @@
             <h3>Respect RGPD</h3>
             <p>Le prototype prévoit consentement, retrait et suppression des contenus.</p>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard organisateur — FEATURE 1 -->
+    <section class="section section-soft" id="dashboard">
+      <div class="container">
+        <div class="section-heading compact">
+          <p class="eyebrow">Espace organisateur</p>
+          <h2>Pilotez votre album en un coup d'œil</h2>
+          <p>Suivez l'activité de votre événement, gérez les invités et contrôlez vos contenus.</p>
+        </div>
+
+        <div class="dashboard-shell card" id="dashboard-shell">
+          <!-- Header dashboard -->
+          <div class="dash-header">
+            <div class="dash-album-info">
+              <span class="status-badge active" id="dash-status-badge">Album actif</span>
+              <h3 id="dash-album-title">Mariage de Léa &amp; Thomas</h3>
+              <p id="dash-album-meta">SP-84K2 · Mariage · 14 juin 2025</p>
+            </div>
+            <div class="dash-actions">
+              <button class="btn btn-secondary btn-small" type="button" id="dash-pause" data-toast="Album mis en pause.">⏸ Pause</button>
+              <button class="btn btn-primary btn-small" type="button" id="dash-export-dash">⬇ Exporter</button>
+            </div>
+          </div>
+
+          <!-- Stats row -->
+          <div class="dash-stats">
+            <div class="dash-stat">
+              <span class="dash-stat-value" id="dash-photos">128</span>
+              <span class="dash-stat-label">Photos</span>
+            </div>
+            <div class="dash-stat">
+              <span class="dash-stat-value" id="dash-videos">24</span>
+              <span class="dash-stat-label">Vidéos</span>
+            </div>
+            <div class="dash-stat">
+              <span class="dash-stat-value" id="dash-guests">46</span>
+              <span class="dash-stat-label">Invités</span>
+            </div>
+            <div class="dash-stat">
+              <span class="dash-stat-value" id="dash-storage">2,4 Go</span>
+              <span class="dash-stat-label">Stockage</span>
+            </div>
+          </div>
+
+          <!-- Storage bar -->
+          <div class="storage-bar-wrap" aria-label="Stockage utilisé">
+            <div class="storage-bar-track">
+              <div class="storage-bar-fill" style="width: 48%"></div>
+            </div>
+            <span class="storage-label">2,4 Go / 5 Go utilisés</span>
+          </div>
+
+          <!-- Activity timeline -->
+          <div class="dash-timeline">
+            <h4 class="dash-section-title">Activité récente</h4>
+            <ul class="timeline-list" id="timeline-list">
+              <li class="timeline-item">
+                <span class="timeline-icon">📸</span>
+                <div>
+                  <strong>Sophie M.</strong> a ajouté 3 photos
+                  <span class="timeline-time">il y a 2 min</span>
+                </div>
+              </li>
+              <li class="timeline-item">
+                <span class="timeline-icon">💬</span>
+                <div>
+                  <strong>Thomas L.</strong> a commenté une photo
+                  <span class="timeline-time">il y a 8 min</span>
+                </div>
+              </li>
+              <li class="timeline-item">
+                <span class="timeline-icon">🎥</span>
+                <div>
+                  <strong>Emma R.</strong> a ajouté une vidéo
+                  <span class="timeline-time">il y a 15 min</span>
+                </div>
+              </li>
+              <li class="timeline-item">
+                <span class="timeline-icon">✅</span>
+                <div>
+                  <strong>Lucas B.</strong> a rejoint l'album
+                  <span class="timeline-time">il y a 22 min</span>
+                </div>
+              </li>
+              <li class="timeline-item">
+                <span class="timeline-icon">🛡️</span>
+                <div>
+                  <strong>Organisateur</strong> a masqué 1 photo
+                  <span class="timeline-time">il y a 1h</span>
+                </div>
+              </li>
+            </ul>
+            <div class="timeline-empty" id="timeline-empty" style="display:none">
+              <p>Créez un album pour voir l'activité en direct.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

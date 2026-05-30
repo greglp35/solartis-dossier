@@ -113,9 +113,30 @@ const consentAccept = document.querySelector("#consent-accept");
 const consentDecline = document.querySelector("#consent-decline");
 const mainEl = document.querySelector("#main");
 
+// Dashboard DOM refs
+const dashAlbumTitle = document.querySelector("#dash-album-title");
+const dashAlbumMeta = document.querySelector("#dash-album-meta");
+const dashStatusBadge = document.querySelector("#dash-status-badge");
+const dashPhotosEl = document.querySelector("#dash-photos");
+const dashVideosEl = document.querySelector("#dash-videos");
+const dashGuestsEl = document.querySelector("#dash-guests");
+const dashStorageEl = document.querySelector("#dash-storage");
+const storageBarFill = document.querySelector(".storage-bar-fill");
+const storageLabel = document.querySelector(".storage-label");
+const timelineList = document.querySelector("#timeline-list");
+const timelineEmpty = document.querySelector("#timeline-empty");
+
+// Share + QR download DOM refs
+const btnDownloadQR = document.querySelector("#btn-download-qr");
+const shareWhatsapp = document.querySelector("#share-whatsapp");
+const shareEmail = document.querySelector("#share-email");
+const shareNative = document.querySelector("#share-native");
+const qrCanvas = document.querySelector("#qr-canvas");
+
 // ── State ─────────────────────────────────────────────────────────────────────
 
 let currentAlbumCode = "SP----";
+let currentAlbumName = "";
 let currentFilter = "all";
 let toastTimer = null;
 let modActionCount = 0;
@@ -157,6 +178,68 @@ function randomMinutes() {
   return Math.floor(Math.random() * 7) + 2;
 }
 
+// ── Count-up animation helper ─────────────────────────────────────────────────
+
+function countUp(element, target, duration) {
+  if (!element) return;
+  const start = 0;
+  const startTime = performance.now();
+
+  function step(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(start + (target - start) * eased);
+    element.textContent = current;
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      element.textContent = target;
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Timeline helper ───────────────────────────────────────────────────────────
+
+function prependTimelineEntry(icon, htmlContent, timeLabel) {
+  if (!timelineList) return;
+
+  // Hide empty state if showing
+  if (timelineEmpty) timelineEmpty.style.display = "none";
+
+  const li = document.createElement("li");
+  li.className = "timeline-item";
+  li.style.opacity = "0";
+  li.style.transform = "translateY(-8px)";
+  li.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+
+  li.innerHTML = `
+    <span class="timeline-icon">${icon}</span>
+    <div>
+      ${htmlContent}
+      <span class="timeline-time">${timeLabel || 'à l\'instant'}</span>
+    </div>
+  `;
+
+  timelineList.prepend(li);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      li.style.opacity = "1";
+      li.style.transform = "none";
+    });
+  });
+
+  // Limit list to 20 items
+  const items = timelineList.querySelectorAll(".timeline-item");
+  if (items.length > 20) {
+    items[items.length - 1].remove();
+  }
+}
+
 // ── Gallery count helper ───────────────────────────────────────────────────────
 
 function updateGalleryCount() {
@@ -192,6 +275,10 @@ function logModerationAction(title, action) {
   modCount.textContent = modActionCount + " " + plural;
 
   modLog.scrollTop = 0;
+
+  // Also update dashboard timeline
+  const actionText = action === "hide" ? "a masqué" : action === "show" ? "a affiché" : "a supprimé";
+  prependTimelineEntry("🛡️", `<strong>Organisateur</strong> ${actionText} : ${title}`, "à l'instant");
 }
 
 // ── Render gallery ────────────────────────────────────────────────────────────
@@ -392,8 +479,9 @@ function handleAlbumSubmit(event) {
     albumResult.classList.remove("loading");
 
     currentAlbumCode = newCode;
+    currentAlbumName = eventName || "Album privé";
 
-    previewTitle.textContent = eventName || "Album privé";
+    previewTitle.textContent = currentAlbumName;
     previewMeta.textContent = [
       eventType,
       eventDate ? new Date(eventDate).toLocaleDateString("fr-FR") : null,
@@ -408,7 +496,7 @@ function handleAlbumSubmit(event) {
     statusBadge.textContent = "Album actif";
     statusBadge.classList.add("active");
 
-    qrEventName.textContent = eventName || "Votre événement";
+    qrEventName.textContent = currentAlbumName;
 
     albumResult.classList.remove("revealed");
     void albumResult.offsetWidth;
@@ -423,9 +511,68 @@ function handleAlbumSubmit(event) {
 
     showToast("Album créé avec succès.", 'success');
 
+    // ── Update dashboard ──
+    updateDashboardOnAlbumCreate(eventName, eventType, eventDate, newCode, ownerName);
+
     // Start live gallery simulation
     setupLiveGallery();
   }, 1200);
+}
+
+// ── Dashboard update on album creation ───────────────────────────────────────
+
+function updateDashboardOnAlbumCreate(eventName, eventType, eventDate, code, ownerName) {
+  // Update title and meta
+  if (dashAlbumTitle) dashAlbumTitle.textContent = eventName || "Album privé";
+
+  const formattedDate = eventDate
+    ? new Date(eventDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+    : "";
+  const metaParts = [code, eventType, formattedDate].filter(Boolean);
+  if (dashAlbumMeta) dashAlbumMeta.textContent = metaParts.join(" · ");
+
+  // Animate stat values
+  const photos = Math.floor(Math.random() * 101) + 80;   // 80–180
+  const videos = Math.floor(Math.random() * 31) + 10;    // 10–40
+  const guests = Math.floor(Math.random() * 41) + 20;    // 20–60
+  const storageGo = (photos * 0.019).toFixed(1);         // rough estimate
+
+  countUp(dashPhotosEl, photos, 900);
+  countUp(dashVideosEl, videos, 900);
+  countUp(dashGuestsEl, guests, 900);
+
+  // Storage is text, handle separately
+  if (dashStorageEl) {
+    let storageStart = 0;
+    const storageTarget = parseFloat(storageGo);
+    const storageStartTime = performance.now();
+    const storageDuration = 900;
+    function stepStorage(currentTime) {
+      const elapsed = currentTime - storageStartTime;
+      const progress = Math.min(elapsed / storageDuration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = (storageStart + (storageTarget - storageStart) * eased).toFixed(1);
+      dashStorageEl.textContent = current.replace(".", ",") + " Go";
+      if (progress < 1) requestAnimationFrame(stepStorage);
+    }
+    requestAnimationFrame(stepStorage);
+  }
+
+  // Animate storage bar
+  const barPct = Math.min(photos * 0.3, 90);
+  if (storageBarFill) {
+    storageBarFill.style.width = "0%";
+    setTimeout(() => {
+      storageBarFill.style.width = barPct + "%";
+    }, 100);
+  }
+  if (storageLabel) {
+    storageLabel.textContent = storageGo.replace(".", ",") + " Go / 5 Go utilisés";
+  }
+
+  // Prepend timeline entry for album creation
+  const creatorName = ownerName || "Organisateur";
+  prependTimelineEntry("✨", `<strong>${creatorName}</strong> a créé l'album`, "à l'instant");
 }
 
 // ── Copy link ─────────────────────────────────────────────────────────────────
@@ -527,6 +674,9 @@ function runUploadSimulation() {
 
         renderGallery();
         showToast("Photo uploadée par un invité !", 'success');
+
+        // Dashboard timeline update
+        prependTimelineEntry("📤", `<strong>Invité</strong> a uploadé "${uploadLabels[randomIndex]}"`, "à l'instant");
       }, 400);
     }
   }, 50);
@@ -733,6 +883,11 @@ function setupLiveGallery() {
 
       showToast(`📸 ${guest} vient d'ajouter une photo !`, 'info');
 
+      // Dashboard timeline update
+      const icon = newItem.isVideo ? "🎥" : "📸";
+      const action = newItem.isVideo ? "a ajouté une vidéo" : "a ajouté une photo";
+      prependTimelineEntry(icon, `<strong>${guest}</strong> ${action}`, "à l'instant");
+
       scheduleNext();
     }, delay);
   };
@@ -864,6 +1019,172 @@ function setupScrollReveal() {
   sections.forEach(s => observer.observe(s));
 }
 
+// ── QR code download ──────────────────────────────────────────────────────────
+
+function downloadQRCode() {
+  if (!qrCanvas) return;
+
+  const size = 200;
+  qrCanvas.width = size;
+  qrCanvas.height = size + 28; // extra for text
+  const ctx = qrCanvas.getContext("2d");
+
+  const totalH = size + 28;
+
+  // White rounded background
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  const r = 18;
+  ctx.moveTo(r, 0);
+  ctx.lineTo(size - r, 0);
+  ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, totalH - r);
+  ctx.quadraticCurveTo(size, totalH, size - r, totalH);
+  ctx.lineTo(r, totalH);
+  ctx.quadraticCurveTo(0, totalH, 0, totalH - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // Helper: draw finder square (QR corner)
+  function drawFinder(x, y) {
+    // Outer border square
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(x, y, 40, 40, 5);
+    ctx.stroke();
+    // Inner filled square
+    ctx.fillStyle = "#111827";
+    ctx.beginPath();
+    ctx.roundRect(x + 9, y + 9, 22, 22, 3);
+    ctx.fill();
+  }
+
+  // Draw 3 finder squares
+  const margin = 18;
+  drawFinder(margin, margin);                            // top-left
+  drawFinder(size - margin - 40, margin);               // top-right
+  drawFinder(margin, size - margin - 40);               // bottom-left
+
+  // Random dots grid in center area (8x8)
+  const gridStartX = margin + 50;
+  const gridStartY = margin + 50;
+  const gridSize = size - (margin + 50) * 2;
+  const cellSize = gridSize / 8;
+
+  ctx.fillStyle = "#111827";
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      if (Math.random() > 0.45) {
+        const cx = gridStartX + col * cellSize + cellSize * 0.15;
+        const cy = gridStartY + row * cellSize + cellSize * 0.15;
+        const cw = cellSize * 0.7;
+        ctx.beginPath();
+        ctx.roundRect(cx, cy, cw, cw, 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // Event name text at bottom
+  const displayName = currentAlbumName || "SouvenirsPartagés";
+  ctx.fillStyle = "#374151";
+  ctx.font = "bold 11px Inter, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  // Truncate if too long
+  const maxWidth = size - 20;
+  let displayText = displayName;
+  if (ctx.measureText(displayText).width > maxWidth) {
+    while (ctx.measureText(displayText + "…").width > maxWidth && displayText.length > 0) {
+      displayText = displayText.slice(0, -1);
+    }
+    displayText += "…";
+  }
+  ctx.fillText(displayText, size / 2, size + 14);
+
+  // Trigger download
+  qrCanvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `qr-${currentAlbumCode}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("QR code téléchargé.", 'success');
+  });
+}
+
+// ── Social share setup ────────────────────────────────────────────────────────
+
+function setupShare() {
+  if (btnDownloadQR) {
+    btnDownloadQR.addEventListener("click", downloadQRCode);
+  }
+
+  if (shareWhatsapp) {
+    shareWhatsapp.addEventListener("click", () => {
+      const link = albumLinkEl ? albumLinkEl.textContent : "souvenirs-partages.fr";
+      const text = encodeURIComponent("Rejoignez notre album photo : " + link);
+      window.open("https://wa.me/?text=" + text, "_blank", "noopener,noreferrer");
+    });
+  }
+
+  if (shareEmail) {
+    shareEmail.addEventListener("click", () => {
+      const link = albumLinkEl ? albumLinkEl.textContent : "souvenirs-partages.fr";
+      const eventName = currentAlbumName || "notre événement";
+      const subject = encodeURIComponent("Album photo — " + eventName);
+      const body = encodeURIComponent("Scannez le QR code ou rejoignez-nous ici : " + link);
+      window.location.href = "mailto:?subject=" + subject + "&body=" + body;
+    });
+  }
+
+  if (shareNative) {
+    shareNative.addEventListener("click", async () => {
+      const link = albumLinkEl ? albumLinkEl.textContent : "souvenirs-partages.fr";
+      const fullLink = "https://" + link;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "Album photo — " + (currentAlbumName || "SouvenirsPartagés"),
+            url: fullLink
+          });
+        } catch (err) {
+          // User cancelled or error
+        }
+      } else {
+        // Fallback: copy link
+        try {
+          if (navigator.clipboard) {
+            await navigator.clipboard.writeText(fullLink);
+          }
+          showToast("Lien copié.", 'success');
+        } catch (err) {
+          showToast("Lien copié.", 'success');
+        }
+      }
+    });
+  }
+}
+
+// ── Dashboard button setup ────────────────────────────────────────────────────
+
+function setupDashboard() {
+  const dashExportBtn = document.querySelector("#dash-export-dash");
+  if (dashExportBtn) {
+    dashExportBtn.addEventListener("click", () => {
+      showToast("Export du dashboard en cours…", 'info');
+    });
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 form.addEventListener("submit", handleAlbumSubmit);
@@ -879,5 +1200,7 @@ setupMenu();
 setupLivePreview();
 setupUploadZone();
 setupConsentModal();
+setupShare();
+setupDashboard();
 renderGallery();
 setupScrollReveal();
