@@ -1,17 +1,19 @@
-import { MSGraphClientV3 } from '@microsoft/sp-http';
+import { SPHttpClient } from '@microsoft/sp-http';
 import { readJson, writeJson, isNotFoundError } from './sharepointStorageService';
 
 function getFavoritesPath(userId: string): string {
-  return `Cockpit_Agence/02_TRAVAIL/favoris_${userId}.json`;
+  const safe = userId.replace(/[^a-zA-Z0-9._-]/g, '_');
+  return `Cockpit_Agence/02_TRAVAIL/favoris_${safe}.json`;
 }
 
 export async function loadFavorites(
-  client: MSGraphClientV3,
-  siteId: string,
+  spHttpClient: SPHttpClient,
+  webUrl: string,
+  webRelativeUrl: string,
   userId: string
 ): Promise<string[]> {
   try {
-    const data = await readJson<unknown>(client, siteId, getFavoritesPath(userId));
+    const data = await readJson<unknown>(spHttpClient, webUrl, webRelativeUrl, getFavoritesPath(userId));
     if (Array.isArray(data)) {
       return data.filter((item): item is string => typeof item === 'string');
     }
@@ -23,10 +25,11 @@ export async function loadFavorites(
 }
 
 export async function saveFavorites(
-  client: MSGraphClientV3,
-  siteId: string,
+  spHttpClient: SPHttpClient,
+  webUrl: string,
+  webRelativeUrl: string,
   userId: string,
   favorites: string[]
 ): Promise<void> {
-  await writeJson(client, siteId, getFavoritesPath(userId), favorites);
+  await writeJson(spHttpClient, webUrl, webRelativeUrl, getFavoritesPath(userId), favorites);
 }

@@ -11,16 +11,10 @@ export interface IHubAgenceWebPartProps {
 
 export default class HubAgenceWebPart extends BaseClientSideWebPart<IHubAgenceWebPartProps> {
   public render(): void {
-    // Build the compound site ID required by Graph API: {hostname},{spSiteId},{spWebId}
-    const hostname = new URL(this.context.pageContext.web.absoluteUrl).hostname;
-    const spSiteId = this.context.pageContext.site.id.toString();
-    const spWebId = this.context.pageContext.web.id.toString();
-    const graphSiteId = `${hostname},${spSiteId},${spWebId}`;
-
     const element: React.ReactElement<IHubAgenceProps> = React.createElement(HubAgence, {
       context: this.context,
-      siteUrl: this.context.pageContext.web.absoluteUrl,
-      siteId: graphSiteId,
+      webUrl: this.context.pageContext.web.absoluteUrl,
+      webRelativeUrl: this.context.pageContext.web.serverRelativeUrl,
     });
 
     ReactDom.render(element, this.domElement);

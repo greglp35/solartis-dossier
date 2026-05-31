@@ -6,12 +6,7 @@
     "version": "1.0.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": false,
-    "isDomainIsolated": false,
-    "webApiPermissionRequests": [
-      { "resource": "Microsoft Graph", "scope": "User.Read" },
-      { "resource": "Microsoft Graph", "scope": "Files.ReadWrite.All" },
-      { "resource": "Microsoft Graph", "scope": "Sites.ReadWrite.All" }
-    ]
+    "isDomainIsolated": false
   },
   "paths": {
     "zippedPackage": "solution/hub-agence.sppkg"

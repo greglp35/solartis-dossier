@@ -1,4 +1,4 @@
-import { MSGraphClientV3 } from '@microsoft/sp-http';
+import { SPHttpClient } from '@microsoft/sp-http';
 import { AuditEvent } from '../models/AuditEvent';
 import { readJson, writeJson, isNotFoundError } from './sharepointStorageService';
 import { toISOString } from '../utils/date';
@@ -6,7 +6,6 @@ import { toISOString } from '../utils/date';
 const AUDIT_PATH = 'Cockpit_Agence/02_TRAVAIL/journal.json';
 const MAX_EVENTS = 500;
 
-// Serialize writes to avoid race conditions
 let writeQueue: Promise<void> = Promise.resolve();
 
 function isValidAuditEvent(e: unknown): e is AuditEvent {
@@ -28,23 +27,27 @@ function generateId(): string {
 }
 
 export function logEvent(
-  client: MSGraphClientV3,
-  siteId: string,
+  spHttpClient: SPHttpClient,
+  webUrl: string,
+  webRelativeUrl: string,
   event: AuditEvent
 ): Promise<void> {
-  writeQueue = writeQueue.then(() => appendEvent(client, siteId, event)).catch(() => undefined);
+  writeQueue = writeQueue
+    .then(() => appendEvent(spHttpClient, webUrl, webRelativeUrl, event))
+    .catch(() => undefined);
   return writeQueue;
 }
 
 async function appendEvent(
-  client: MSGraphClientV3,
-  siteId: string,
+  spHttpClient: SPHttpClient,
+  webUrl: string,
+  webRelativeUrl: string,
   event: AuditEvent
 ): Promise<void> {
   let events: AuditEvent[] = [];
 
   try {
-    const existing = await readJson<unknown>(client, siteId, AUDIT_PATH);
+    const existing = await readJson<unknown>(spHttpClient, webUrl, webRelativeUrl, AUDIT_PATH);
     if (Array.isArray(existing)) {
       events = (existing as unknown[]).filter(isValidAuditEvent);
     }
@@ -57,17 +60,17 @@ async function appendEvent(
   }
 
   events.push(event);
-
   if (events.length > MAX_EVENTS) {
     events = events.slice(events.length - MAX_EVENTS);
   }
 
-  await writeJson(client, siteId, AUDIT_PATH, events);
+  await writeJson(spHttpClient, webUrl, webRelativeUrl, AUDIT_PATH, events);
 }
 
 export async function logError(
-  client: MSGraphClientV3,
-  siteId: string,
+  spHttpClient: SPHttpClient,
+  webUrl: string,
+  webRelativeUrl: string,
   error: Error,
   context: string,
   userId: string,
@@ -83,6 +86,5 @@ export async function logError(
     status: 'error',
     details: `${error.name}: ${error.message}`,
   };
-
-  return logEvent(client, siteId, event);
+  return logEvent(spHttpClient, webUrl, webRelativeUrl, event);
 }

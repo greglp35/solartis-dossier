@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
-import { MSGraphClientV3 } from '@microsoft/sp-http';
+import { SPHttpClient } from '@microsoft/sp-http';
 
 import { ApplicationItem } from '../models/ApplicationItem';
 import { UserRole } from '../models/UserRole';
 import { SaveStatus } from '../models/SaveStatus';
 import { AuditEvent } from '../models/AuditEvent';
 
-import { getGraphClient, getCurrentUser } from '../services/graphService';
+import { getCurrentUser, SPUser } from '../services/spUserService';
 import { loadApplications, filterApplications } from '../services/appRegistryService';
 import { loadFavorites, saveFavorites } from '../services/favoriteService';
 import { logEvent, logError } from '../services/auditLogService';
@@ -25,8 +25,8 @@ import styles from '../styles/HubAgence.module.scss';
 
 export interface IHubAgenceProps {
   context: WebPartContext;
-  siteUrl: string;
-  siteId: string;
+  webUrl: string;
+  webRelativeUrl: string;
 }
 
 interface IHubAgenceState {
@@ -37,10 +37,9 @@ interface IHubAgenceState {
   saveStatus: SaveStatus;
   error: string | null;
   settingsOpen: boolean;
-  currentUser: { id: string; displayName: string; userPrincipalName: string } | null;
-  graphClient: MSGraphClientV3 | null;
+  currentUser: SPUser | null;
   lastSaved: string | null;
-  graphStatus: 'connected' | 'error';
+  spStatus: 'connected' | 'error';
   recentErrors: string[];
 }
 
@@ -49,8 +48,11 @@ function generateId(): string {
 }
 
 export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgenceState> {
+  private spHttpClient: SPHttpClient;
+
   constructor(props: IHubAgenceProps) {
     super(props);
+    this.spHttpClient = props.context.spHttpClient;
     this.state = {
       applications: [],
       favorites: [],
@@ -60,9 +62,8 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
       error: null,
       settingsOpen: false,
       currentUser: null,
-      graphClient: null,
       lastSaved: null,
-      graphStatus: 'connected',
+      spStatus: 'connected',
       recentErrors: [],
     };
   }
@@ -70,19 +71,16 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
   public async componentDidMount(): Promise<void> {
     this.setState({ saveStatus: 'loading' });
     try {
-      const client = await getGraphClient(this.props.context);
-      const user = await getCurrentUser(client);
-
-      this.setState({ graphClient: client, currentUser: user, graphStatus: 'connected' });
+      const user = getCurrentUser(this.props.context);
+      this.setState({ currentUser: user, spStatus: 'connected' });
 
       const [apps, favs] = await Promise.all([
-        loadApplications(client, this.props.siteId),
-        loadFavorites(client, this.props.siteId, user.id),
+        loadApplications(this.spHttpClient, this.props.webUrl, this.props.webRelativeUrl),
+        loadFavorites(this.spHttpClient, this.props.webUrl, this.props.webRelativeUrl, user.id),
       ]);
 
       this.setState({ applications: apps, favorites: favs, saveStatus: 'idle' });
 
-      // Log app open event (fire and forget)
       const openEvent: AuditEvent = {
         id: generateId(),
         timestamp: toISOString(),
@@ -93,15 +91,14 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
         status: 'success',
         details: `${apps.length} application(s) chargée(s)`,
       };
-      logEvent(client, this.props.siteId, openEvent).catch(() => {
-        // Non-critical, ignore
-      });
+      logEvent(this.spHttpClient, this.props.webUrl, this.props.webRelativeUrl, openEvent).catch(() => undefined);
+
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       this.setState({
         saveStatus: 'error',
         error: `Erreur lors de l'initialisation : ${errMsg}`,
-        graphStatus: 'error',
+        spStatus: 'error',
         recentErrors: [errMsg],
       });
     }
@@ -116,8 +113,8 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
   };
 
   private handleToggleFavorite = async (appId: string): Promise<void> => {
-    const { favorites, graphClient, currentUser } = this.state;
-    if (!graphClient || !currentUser) return;
+    const { favorites, currentUser } = this.state;
+    if (!currentUser) return;
 
     const isCurrentlyFavorite = favorites.includes(appId);
     const newFavorites = isCurrentlyFavorite
@@ -127,7 +124,7 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
     this.setState({ favorites: newFavorites, saveStatus: 'saving' });
 
     try {
-      await saveFavorites(graphClient, this.props.siteId, currentUser.id, newFavorites);
+      await saveFavorites(this.spHttpClient, this.props.webUrl, this.props.webRelativeUrl, currentUser.id, newFavorites);
       const now = toISOString();
       this.setState({ saveStatus: 'saved', lastSaved: now });
 
@@ -140,7 +137,8 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
         target: appId,
         status: 'success',
       };
-      logEvent(graphClient, this.props.siteId, favEvent).catch(() => undefined);
+      logEvent(this.spHttpClient, this.props.webUrl, this.props.webRelativeUrl, favEvent).catch(() => undefined);
+
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       // Rollback optimistic update
@@ -151,20 +149,20 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
         recentErrors: [errMsg, ...prev.recentErrors].slice(0, 10),
       }));
 
-      if (graphClient && currentUser) {
-        logError(graphClient, this.props.siteId, err instanceof Error ? err : new Error(errMsg), 'saveFavorites', currentUser.id, currentUser.displayName).catch(() => undefined);
-      }
+      logError(
+        this.spHttpClient, this.props.webUrl, this.props.webRelativeUrl,
+        err instanceof Error ? err : new Error(errMsg),
+        'saveFavorites', currentUser.id, currentUser.displayName
+      ).catch(() => undefined);
     }
   };
 
   private handleOpenApp = (app: ApplicationItem): void => {
-    const { graphClient, currentUser } = this.state;
-
+    const { currentUser } = this.state;
     if (app.path) {
       window.open(app.path, '_blank', 'noopener,noreferrer');
     }
-
-    if (graphClient && currentUser) {
+    if (currentUser) {
       const openEvent: AuditEvent = {
         id: generateId(),
         timestamp: toISOString(),
@@ -175,7 +173,7 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
         status: 'success',
         details: app.title,
       };
-      logEvent(graphClient, this.props.siteId, openEvent).catch(() => undefined);
+      logEvent(this.spHttpClient, this.props.webUrl, this.props.webRelativeUrl, openEvent).catch(() => undefined);
     }
   };
 
@@ -189,34 +187,21 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
 
   public render(): React.ReactElement {
     const {
-      applications,
-      favorites,
-      currentFilter,
-      searchQuery,
-      saveStatus,
-      error,
-      settingsOpen,
-      currentUser,
-      lastSaved,
-      graphStatus,
-      recentErrors,
+      applications, favorites, currentFilter, searchQuery,
+      saveStatus, error, settingsOpen, currentUser,
+      lastSaved, spStatus, recentErrors,
     } = this.state;
 
     const filtered = filterApplications(applications, currentFilter, favorites, searchQuery);
-    const favoritesCount = favorites.length;
 
     return (
       <div className={styles.hubContainer}>
-        {error && (
-          <ErrorBanner message={error} onDismiss={this.handleDismissError} />
-        )}
+        {error && <ErrorBanner message={error} onDismiss={this.handleDismissError} />}
 
         <div className={styles.headerBar}>
           <div className={styles.titleArea}>
             <span className={styles.hubTitle}>Hub Agence</span>
-            {currentUser && (
-              <span className={styles.userName}>{currentUser.displayName}</span>
-            )}
+            {currentUser && <span className={styles.userName}>{currentUser.displayName}</span>}
           </div>
           <div className={styles.headerActions}>
             <StatusBar status={saveStatus} lastSaved={lastSaved} />
@@ -225,9 +210,7 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
               onClick={this.handleToggleSettings}
               title="Paramètres"
               aria-label="Ouvrir les paramètres"
-            >
-              ⚙
-            </button>
+            >⚙</button>
           </div>
         </div>
 
@@ -236,7 +219,7 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
           <FilterBar
             currentFilter={currentFilter}
             onChange={this.handleFilterChange}
-            favoritesCount={favoritesCount}
+            favoritesCount={favorites.length}
           />
         </div>
 
@@ -278,10 +261,10 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
         {settingsOpen && (
           <SettingsPanel
             user={currentUser}
-            siteUrl={this.props.siteUrl}
+            siteUrl={this.props.webUrl}
             library="Documents"
             lastSaved={lastSaved}
-            graphStatus={graphStatus}
+            graphStatus={spStatus}
             recentErrors={recentErrors}
             onClose={this.handleToggleSettings}
           />
