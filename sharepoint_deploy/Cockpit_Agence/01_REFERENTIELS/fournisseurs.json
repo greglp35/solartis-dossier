@@ -1,0 +1,19 @@
+[
+  {
+    "id": "fourn-001",
+    "nom": "Fournisseur exemple",
+    "contact": "",
+    "telephone": "",
+    "email": "",
+    "categoriesProduits": ["Gros œuvre"],
+    "conditionsLivraison": "",
+    "delaiHabituel": 3,
+    "noteRelation": "bon",
+    "statut": "actif",
+    "source": "init",
+    "confidence": "faible",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  }
+]

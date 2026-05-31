@@ -1,0 +1,32 @@
+[
+  {
+    "id": "action-001",
+    "title": "Contrôle stock mini/maxi",
+    "description": "Vérifier les niveaux de stock critiques et passer les commandes de réapprovisionnement.",
+    "category": "Stock",
+    "priority": "forte",
+    "status": "en-cours",
+    "responsable": "Chef agence",
+    "echeance": "2026-06-07",
+    "source": "brief-quotidien",
+    "confidence": "fort",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  },
+  {
+    "id": "action-002",
+    "title": "Relance devis clients en attente",
+    "description": "Contacter les clients dont le devis date de plus de 7 jours sans retour.",
+    "category": "Commerce",
+    "priority": "moyenne",
+    "status": "a-faire",
+    "responsable": "Comptoir",
+    "echeance": "2026-06-05",
+    "source": "brief-quotidien",
+    "confidence": "fort",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  }
+]

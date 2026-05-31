@@ -1,0 +1,29 @@
+{
+  "note": "Ce fichier documente les droits attendus. Il ne remplace pas les droits SharePoint réels.",
+  "roles": [
+    {
+      "role": "Chef agence",
+      "lecture": ["applications", "actions", "stock", "clients", "devis", "commandes", "livraisons", "securite", "journal"],
+      "ecriture": ["actions", "journal", "securite", "favoris"],
+      "admin": false
+    },
+    {
+      "role": "Comptoir",
+      "lecture": ["applications", "clients", "devis", "fournisseurs", "documents"],
+      "ecriture": ["devis", "actions", "favoris"],
+      "admin": false
+    },
+    {
+      "role": "Dépôt",
+      "lecture": ["applications", "stock", "commandes", "livraisons", "securite"],
+      "ecriture": ["livraisons", "securite", "actions", "favoris"],
+      "admin": false
+    },
+    {
+      "role": "Admin",
+      "lecture": ["all"],
+      "ecriture": ["all"],
+      "admin": true
+    }
+  ]
+}

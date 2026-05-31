@@ -1,0 +1,9 @@
+[
+  { "id": "tous", "label": "Tous", "description": "Accès communs et vue globale." },
+  { "id": "chef-agence", "label": "Chef agence", "description": "Pilotage, décisions, sécurité, commerce et priorités." },
+  { "id": "comptoir", "label": "Comptoir", "description": "Devis, quantitatifs, clients, fournisseurs, documents." },
+  { "id": "depot", "label": "Dépôt", "description": "Stock, livraisons, préparation, sécurité terrain." },
+  { "id": "admin", "label": "Admin", "description": "Paramètres, référentiels, configuration et suivi technique." },
+  { "id": "favoris", "label": "Favoris", "description": "Accès favoris de l'utilisateur connecté." },
+  { "id": "fournisseurs", "label": "Fournisseurs", "description": "Vue spéciale filtrée par catégorie fournisseurs." }
+]

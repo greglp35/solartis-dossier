@@ -1,0 +1,21 @@
+[
+  {
+    "id": "devis-001",
+    "numero": "DEV-2026-001",
+    "client": "Client exemple",
+    "objet": "Fourniture matériaux — exemple",
+    "montantHT": 0,
+    "statut": "en-attente",
+    "dateDevis": "2026-05-31",
+    "dateRelance": "",
+    "dateExpiration": "",
+    "priorite": "faible",
+    "responsable": "Comptoir",
+    "notes": "Fiche exemple — à remplacer.",
+    "source": "init",
+    "confidence": "faible",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  }
+]
