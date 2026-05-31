@@ -1,47 +1,47 @@
 # Tutoriel de déploiement — Hub Agence V4 SPFx
 
-## Prérequis
-
-Avant de commencer, vérifier que vous avez :
-
-- Accès **administrateur** au tenant Microsoft 365
-- Accès à l'**App Catalog SharePoint** du tenant
-- **Node.js 18** installé sur votre machine (`node --version` → `v18.x.x`)
-- **npm** installé (`npm --version`)
-- Le dépôt cloné en local (`git clone ...`)
+> **Aucune permission Microsoft Graph requise.** La webpart utilise l'API REST SharePoint native et la session de l'utilisateur connecté.
 
 ---
 
-## Étape 1 — Cloner et builder le projet
+## Prérequis
 
-### 1.1 Cloner la branche
+| Prérequis | Détail |
+|---|---|
+| Accès **administrateur SharePoint** | Pour déposer le .sppkg dans l'App Catalog |
+| **Node.js 18** sur votre machine | `node --version` doit afficher `v18.x.x` |
+| **npm** | Fourni avec Node.js |
+| Dépôt cloné en local | `git clone https://github.com/greglp35/solartis-dossier.git` |
+
+---
+
+## Étape 1 — Builder le projet
+
+### 1.1 Ouvrir un terminal et se positionner dans le projet
 
 ```bash
 git clone https://github.com/greglp35/solartis-dossier.git
 cd solartis-dossier
 git checkout claude/zealous-dijkstra-HewLK
+cd hub-agence-spfx
 ```
 
 ### 1.2 Installer les dépendances
 
 ```bash
-cd hub-agence-spfx
 npm install
 ```
 
-> ⚠️ Des avertissements `EBADENGINE` peuvent apparaître si Node n'est pas exactement v18. Utiliser `nvm use 18` si disponible.
+> Si vous avez Node.js 20 ou 22 installé, utilisez `nvm use 18` avant (ou installez nvm).
 
-### 1.3 Compiler et packager
+### 1.3 Compiler et créer le package
 
 ```bash
-# Compiler pour la production
 gulp bundle --ship
-
-# Créer le package SharePoint
 gulp package-solution --ship
 ```
 
-Le fichier livrable se trouve dans :
+Le fichier à déployer est créé ici :
 
 ```
 hub-agence-spfx/sharepoint/solution/hub-agence.sppkg
@@ -53,127 +53,144 @@ hub-agence-spfx/sharepoint/solution/hub-agence.sppkg
 
 ### 2.1 Ouvrir l'App Catalog
 
-1. Aller sur `https://VOTRE-TENANT.sharepoint.com/sites/appcatalog`
-   *(ou : Centre d'administration SharePoint → Sites → App Catalog)*
-2. Cliquer sur **Applications pour SharePoint**
+Dans votre navigateur, aller à :
 
-### 2.2 Uploader le .sppkg
+```
+https://VOTRE-TENANT.sharepoint.com/sites/appcatalog
+```
 
-1. Cliquer **Télécharger** (ou glisser-déposer)
+*(Si vous ne connaissez pas l'URL : Centre d'administration SharePoint → Sites actifs → chercher "appcatalog")*
+
+Cliquer sur **Applications pour SharePoint** dans le menu gauche.
+
+### 2.2 Uploader le fichier .sppkg
+
+1. Cliquer **Télécharger** en haut à gauche (ou glisser-déposer le fichier)
 2. Sélectionner `hub-agence.sppkg`
-3. Dans la boîte de dialogue qui s'ouvre :
-   - Cocher **Rendre cette solution disponible pour tous les sites**
+3. Dans la boîte de dialogue :
+   - Cocher ✅ **Rendre cette solution disponible pour tous les sites de l'organisation**
    - Cliquer **Déployer**
 
-### 2.3 Approuver les permissions Microsoft Graph
-
-> ⚠️ Cette étape est **critique**. Sans approbation, la webpart ne peut pas lire/écrire dans SharePoint.
-
-1. Aller sur `https://VOTRE-TENANT-admin.sharepoint.com`
-2. Dans le menu gauche : **Paramètres avancés → Accès aux API**
-3. Vous verrez 3 demandes en attente :
-
-| Ressource | Permission | Action |
-|---|---|---|
-| Microsoft Graph | User.Read | ✅ Approuver |
-| Microsoft Graph | Files.ReadWrite.All | ✅ Approuver |
-| Microsoft Graph | Sites.ReadWrite.All | ✅ Approuver |
-
-4. Cliquer **Approuver** pour chacune
+> **Aucune demande de permission Graph n'apparaîtra.** C'est normal — la webpart n'en a pas besoin.
 
 ---
 
 ## Étape 3 — Créer l'arborescence SharePoint
 
-### 3.1 Ouvrir la bibliothèque Documents
+### 3.1 Ouvrir votre site SharePoint
 
-1. Aller sur votre site SharePoint cible (ex : `https://VOTRE-TENANT.sharepoint.com/sites/agence`)
-2. Cliquer sur **Documents** dans le menu gauche
+Aller sur votre site agence, par exemple :
+
+```
+https://VOTRE-TENANT.sharepoint.com/sites/agence
+```
+
+Cliquer sur **Documents** dans le menu de gauche.
 
 ### 3.2 Créer les dossiers
 
-Créer les dossiers suivants **dans l'ordre** (clic droit → Nouveau → Dossier) :
+Créer les dossiers **dans cet ordre exact** en faisant `+ Nouveau → Dossier` à chaque niveau :
 
 ```
 Documents/
-└── Cockpit_Agence/
-    ├── 00_CONFIG/
+└── Cockpit_Agence/            ← créer en premier
+    ├── 00_CONFIG/             ← entrer dans Cockpit_Agence, créer ce dossier
     ├── 01_REFERENTIELS/
     ├── 02_TRAVAIL/
     └── 05_ARCHIVES/
-        └── sauvegardes/
+        └── sauvegardes/       ← entrer dans 05_ARCHIVES, créer ce sous-dossier
 ```
 
-> 💡 Le nom `Cockpit_Agence` est sensible à la casse. L'écrire exactement ainsi.
+> ⚠️ Respecter exactement la casse : `Cockpit_Agence`, `00_CONFIG`, `02_TRAVAIL`, etc.
 
 ---
 
 ## Étape 4 — Déposer les fichiers JSON
 
-Les fichiers se trouvent dans le dossier `sharepoint_deploy/` du dépôt.
+Tous les fichiers se trouvent dans le dossier `sharepoint_deploy/` du dépôt cloné.
 
-### 4.1 Dossier 00_CONFIG (obligatoire)
+Pour chaque dossier ci-dessous, naviguer dans SharePoint jusqu'au bon dossier, puis **glisser-déposer** les fichiers.
+
+### Dossier 00_CONFIG — obligatoire au démarrage
 
 Uploader dans `Documents/Cockpit_Agence/00_CONFIG/` :
 
-| Fichier | Description |
+| Fichier | Rôle |
 |---|---|
 | `hub_config.json` | Paramètres généraux du hub |
-| `applications.json` | **Liste des outils du hub** ← à adapter |
-| `profils.json` | Profils utilisateurs |
-| `categories.json` | Catégories d'outils |
-| `droits_roles.json` | Documentation des droits |
+| `applications.json` | **Liste des outils affichés** ← à adapter (voir étape 5) |
+| `profils.json` | Définition des profils utilisateurs |
+| `categories.json` | Liste des catégories |
+| `droits_roles.json` | Documentation des droits (informatif) |
 
-### 4.2 Dossier 01_REFERENTIELS
+### Dossier 01_REFERENTIELS
 
 Uploader dans `Documents/Cockpit_Agence/01_REFERENTIELS/` :
 
-| Fichier | Description |
+| Fichier | Rôle |
 |---|---|
 | `fournisseurs.json` | Référentiel fournisseurs |
 
-### 4.3 Dossier 02_TRAVAIL
+### Dossier 02_TRAVAIL
 
 Uploader dans `Documents/Cockpit_Agence/02_TRAVAIL/` :
 
-| Fichier | Description |
+| Fichier | Rôle |
 |---|---|
-| `actions.json` | Actions agence |
-| `stock.json` | Suivi stock |
+| `actions.json` | Actions agence à suivre |
+| `stock.json` | Suivi des niveaux de stock |
 | `clients.json` | Fiches clients |
 | `devis.json` | Devis et relances |
-| `commandes.json` | Suivi commandes |
-| `livraisons.json` | Suivi livraisons |
+| `commandes.json` | Suivi des commandes |
+| `livraisons.json` | Suivi des livraisons |
 | `securite.json` | Contrôles sécurité |
-| `journal.json` | Journal d'audit (tableau vide) |
+| `journal.json` | Journal d'audit (contient `[]` au départ) |
 
 ---
 
-## Étape 5 — Adapter applications.json
+## Étape 5 — Adapter applications.json à votre site
 
-Ouvrir `sharepoint_deploy/Cockpit_Agence/00_CONFIG/applications.json` et remplacer chaque `path` par l'URL réelle de votre site.
+Ouvrir le fichier `sharepoint_deploy/Cockpit_Agence/00_CONFIG/applications.json` dans un éditeur de texte (Notepad, VS Code…).
 
-### Avant (exemple fourni)
+Chaque outil a un champ `path`. Remplacer `/sites/agence/` par le nom réel de votre site.
+
+**Comment trouver le nom de votre site :**
+Regarder l'URL de votre site SharePoint dans le navigateur :
+```
+https://votre-tenant.sharepoint.com/sites/NOM-DU-SITE/...
+                                          ↑
+                                    c'est ce nom
+```
+
+**Exemple de modification :**
 ```json
+// Avant (exemple fourni)
 "path": "/sites/agence/SitePages/Cockpit-Agence.aspx"
+
+// Après (votre site réel, si votre site s'appelle "agence-nord")
+"path": "/sites/agence-nord/SitePages/Cockpit-Agence.aspx"
 ```
 
-### Après (votre site réel)
-```json
-"path": "/sites/NOM-DE-VOTRE-SITE/SitePages/Cockpit-Agence.aspx"
-```
-
-Trouver le nom de votre site : regarder l'URL dans la barre d'adresse de votre navigateur sur SharePoint.
+Faire le remplacement sur toutes les lignes `path` du fichier, puis re-uploader le fichier dans SharePoint (remplacer l'existant).
 
 ---
 
-## Étape 6 — Ajouter la webpart sur une page
+## Étape 6 — Installer la webpart sur votre site
+
+### 6.1 Ajouter l'application au site
 
 1. Aller sur votre site SharePoint
-2. Cliquer **Pages du site** dans le menu gauche
-3. Créer une nouvelle page (ou modifier une existante) : **+ Nouvelle page**
-4. Cliquer le bouton **+** dans la zone de contenu
-5. Taper `Hub Agence` dans la recherche
+2. Cliquer l'icône ⚙ en haut à droite → **Ajouter une application**
+3. Chercher **hub-agence** dans la liste
+4. Cliquer **Ajouter**
+
+### 6.2 Ajouter la webpart sur une page
+
+1. Aller sur votre site SharePoint
+2. Dans le menu gauche, cliquer **Pages du site**
+3. Cliquer **+ Nouvelle page** (ou ouvrir une page existante en mode édition)
+4. Sur la page, cliquer le **+** pour ajouter un composant
+5. Taper `Hub Agence` dans la barre de recherche
 6. Cliquer sur la webpart **Hub Agence**
 7. Cliquer **Publier** en haut à droite
 
@@ -181,63 +198,76 @@ Trouver le nom de votre site : regarder l'URL dans la barre d'adresse de votre n
 
 ## Étape 7 — Vérification
 
-Après publication, vérifier point par point :
+Après avoir publié la page, effectuer ces contrôles :
 
-| Test | Résultat attendu |
-|---|---|
-| La page s'affiche sans message d'erreur rouge | ✅ |
-| Les outils du hub sont visibles (11 cartes) | ✅ |
-| La recherche filtre les cartes en temps réel | ✅ |
-| Les onglets (Chef agence, Comptoir…) filtrent correctement | ✅ |
-| Clic sur une carte → ouvre la bonne page | ✅ |
-| Étoile favorite → reste jaune après rechargement | ✅ |
-| Icône ⚙ → panneau paramètres affiche l'utilisateur et "Graph : connecté" | ✅ |
+| # | Test | Résultat attendu |
+|---|---|---|
+| 1 | La page s'affiche sans bandeau rouge d'erreur | ✅ |
+| 2 | Les 11 outils du hub apparaissent sous forme de cartes | ✅ |
+| 3 | La barre de recherche filtre les cartes en temps réel | ✅ |
+| 4 | Les onglets (Tous, Chef agence, Comptoir…) filtrent sans doublon | ✅ |
+| 5 | Un clic sur une carte ouvre la bonne page SharePoint | ✅ |
+| 6 | Cliquer l'étoile ★ d'une carte la rend jaune | ✅ |
+| 7 | Après rechargement de la page, les favoris sont toujours là | ✅ |
+| 8 | Cliquer ⚙ → le panneau affiche votre nom et le statut SharePoint | ✅ |
 
 ---
 
-## Problèmes fréquents
+## Résolution des problèmes
 
-### La webpart affiche "Erreur lors de l'initialisation"
+### "Erreur lors de l'initialisation"
 
-**Cause probable :** Les permissions Graph ne sont pas approuvées.
+**Cause :** `applications.json` introuvable ou chemin incorrect.
 
-**Solution :** Reprendre l'étape 2.3 et vérifier que les 3 permissions sont bien approuvées (statut = **Approuvé**, pas *En attente*).
+**Solution :**
+1. Vérifier que le fichier existe bien dans `Documents/Cockpit_Agence/00_CONFIG/applications.json`
+2. Vérifier la casse des noms de dossiers (`Cockpit_Agence` et non `cockpit_agence`)
+3. Vérifier que vous êtes bien sur le bon site SharePoint
 
-### Les outils ne s'affichent pas
+### Les cartes n'apparaissent pas (page blanche sans erreur)
 
-**Cause probable :** `applications.json` est introuvable ou mal placé.
+**Cause :** Le fichier `applications.json` est vide ou invalide.
 
-**Solution :** Vérifier que le fichier est bien dans `Documents/Cockpit_Agence/00_CONFIG/applications.json` (chemin exact, sensible à la casse).
+**Solution :** Ouvrir le fichier dans un éditeur, vérifier qu'il commence par `[` et se termine par `]`, et que le JSON est valide (utiliser [jsonlint.com](https://jsonlint.com)).
 
 ### Les favoris ne se sauvegardent pas
 
-**Cause probable :** L'utilisateur n'a pas les droits d'écriture sur `02_TRAVAIL/`.
+**Cause :** L'utilisateur n'a pas les droits d'écriture sur le dossier `02_TRAVAIL/`.
 
-**Solution :** Vérifier que les contributeurs ont le niveau **Collaboration** sur le dossier `Cockpit_Agence/` dans SharePoint.
+**Solution :**
+1. Dans SharePoint, naviguer jusqu'à `Documents/Cockpit_Agence/02_TRAVAIL/`
+2. Cliquer les `…` → **Gérer l'accès**
+3. Vérifier que les utilisateurs ont au moins le niveau **Collaboration**
 
-### "Vous n'avez pas les droits nécessaires pour lire la configuration"
+### "Lecture fichier échouée (403)"
 
-**Cause probable :** L'utilisateur n'a pas accès au site SharePoint ou à la bibliothèque Documents.
+**Cause :** L'utilisateur n'a pas accès à la bibliothèque Documents.
 
-**Solution :** Inviter l'utilisateur sur le site SharePoint avec au minimum le rôle **Lecteur**.
+**Solution :** Inviter l'utilisateur sur le site SharePoint (rôle **Visiteur** minimum pour la lecture, **Membre** pour l'écriture des favoris).
+
+### "Lecture fichier échouée (404)"
+
+**Cause :** Un fichier JSON est manquant dans SharePoint.
+
+**Solution :** Vérifier que tous les fichiers de l'étape 4 ont bien été uploadés au bon endroit.
 
 ---
 
 ## Droits SharePoint recommandés
 
-| Profil | Niveau sur Cockpit_Agence/ |
-|---|---|
-| Chef agence | Collaboration (lecture + écriture) |
-| Comptoir | Collaboration |
-| Dépôt | Collaboration |
-| Admin | Contrôle total |
-| Visiteur | Lecture seule |
+| Profil | Niveau sur le site | Niveau sur Cockpit_Agence/ |
+|---|---|---|
+| Chef agence | Membre | Collaboration (lecture + écriture) |
+| Comptoir | Membre | Collaboration |
+| Dépôt | Membre | Collaboration |
+| Admin | Propriétaire | Contrôle total |
+| Visiteur | Visiteur | Lecture seule |
 
 ---
 
 ## Mise à jour de la webpart
 
-Pour mettre à jour la webpart après modification du code :
+Après modification du code source :
 
 ```bash
 cd hub-agence-spfx
@@ -245,6 +275,6 @@ gulp bundle --ship
 gulp package-solution --ship
 ```
 
-Re-uploader `hub-agence.sppkg` dans l'App Catalog → cliquer **Remplacer**.
+Re-uploader `hub-agence.sppkg` dans l'App Catalog, cliquer **Remplacer**.
 
-La mise à jour est propagée automatiquement sur tous les sites sans action supplémentaire.
+La mise à jour est automatiquement propagée sur tous les sites sans autre action.
