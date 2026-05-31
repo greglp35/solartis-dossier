@@ -1,0 +1,14 @@
+[
+  {
+    "id": "client-demo-001",
+    "name": "Client exemple",
+    "segment": "Artisan",
+    "status": "actif",
+    "priority": "moyenne",
+    "nextAction": "Relance commerciale à qualifier",
+    "source": "modèle V4",
+    "confidence": "moyen",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z"
+  }
+]

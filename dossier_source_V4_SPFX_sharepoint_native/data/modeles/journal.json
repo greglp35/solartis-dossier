@@ -1,0 +1,12 @@
+[
+  {
+    "id": "audit-demo-001",
+    "timestamp": "2026-05-31T00:00:00.000Z",
+    "userId": "demo-user",
+    "userName": "Utilisateur exemple",
+    "action": "initialisation",
+    "target": "Hub Agence V4",
+    "status": "success",
+    "details": "Journal modèle créé pour la V4."
+  }
+]
