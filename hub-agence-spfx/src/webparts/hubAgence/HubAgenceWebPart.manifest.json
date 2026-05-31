@@ -1,0 +1,21 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "b1c2d3e4-f5a6-7890-bcde-f12345678901",
+  "alias": "HubAgenceWebPart",
+  "componentType": "WebPart",
+  "version": "*",
+  "manifestVersion": 2,
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab"],
+  "supportsThemeVariants": true,
+  "preconfiguredEntries": [
+    {
+      "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+      "group": { "default": "Other" },
+      "title": { "default": "Hub Agence" },
+      "description": { "default": "Hub d'accès aux outils métier de l'agence" },
+      "officeFabricIconFontName": "ViewAll",
+      "properties": {}
+    }
+  ]
+}

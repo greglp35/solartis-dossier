@@ -31,7 +31,8 @@
     "types": [
       "jest",
       "react",
-      "react-dom"
+      "react-dom",
+      "node"
     ]
   },
   "include": [

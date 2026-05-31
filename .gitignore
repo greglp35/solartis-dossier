@@ -3,3 +3,8 @@ dist/
 lib/
 *.sppkg
 .yo-resolve
+hub-agence-spfx/temp/
+hub-agence-spfx/release/
+hub-agence-spfx/sharepoint/solution/
+hub-agence-spfx/src/**/*.scss.ts
+hub-agence-spfx/lib/
