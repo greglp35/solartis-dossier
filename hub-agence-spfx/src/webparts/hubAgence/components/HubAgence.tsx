@@ -143,7 +143,9 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
       logEvent(graphClient, this.props.siteId, favEvent).catch(() => undefined);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
+      // Rollback optimistic update
       this.setState((prev) => ({
+        favorites,
         saveStatus: 'error',
         error: `Erreur lors de la sauvegarde des favoris : ${errMsg}`,
         recentErrors: [errMsg, ...prev.recentErrors].slice(0, 10),
@@ -249,7 +251,7 @@ export default class HubAgence extends React.Component<IHubAgenceProps, IHubAgen
             <span className={styles.spinner} role="status" aria-label="Chargement en cours" />
             <span>Chargement des applications…</span>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : saveStatus === 'error' && applications.length === 0 ? null : filtered.length === 0 ? (
           <div className={styles.emptyState}>
             <span className={styles.emptyIcon}>🔍</span>
             <p>Aucune application trouvée.</p>
