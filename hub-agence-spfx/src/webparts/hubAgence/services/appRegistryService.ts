@@ -6,7 +6,7 @@ import { validateApplicationItem } from '../utils/validateApplicationItem';
 import { normalizeString } from '../utils/normalize';
 import { dedupeApplications } from '../utils/dedupe';
 
-const APPLICATIONS_PATH = 'Cockpit_Agence/00_CONFIG/applications.json';
+const APPLICATIONS_PATH = 'Agences/BREAL/apps/Cockpit_Agence/00_CONFIG/applications.json';
 
 export async function loadApplications(
   spHttpClient: SPHttpClient,

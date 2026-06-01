@@ -3,7 +3,7 @@ import { AuditEvent } from '../models/AuditEvent';
 import { readJson, writeJson, isNotFoundError } from './sharepointStorageService';
 import { toISOString } from '../utils/date';
 
-const AUDIT_PATH = 'Cockpit_Agence/02_TRAVAIL/journal.json';
+const AUDIT_PATH = 'Agences/BREAL/apps/Cockpit_Agence/02_TRAVAIL/journal.json';
 const MAX_EVENTS = 500;
 
 let writeQueue: Promise<void> = Promise.resolve();

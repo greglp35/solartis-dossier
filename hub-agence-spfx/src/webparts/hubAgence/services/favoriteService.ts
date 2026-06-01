@@ -3,7 +3,7 @@ import { readJson, writeJson, isNotFoundError } from './sharepointStorageService
 
 function getFavoritesPath(userId: string): string {
   const safe = userId.replace(/[^a-zA-Z0-9._-]/g, '_');
-  return `Cockpit_Agence/02_TRAVAIL/favoris_${safe}.json`;
+  return `Agences/BREAL/apps/Cockpit_Agence/02_TRAVAIL/favoris_${safe}.json`;
 }
 
 export async function loadFavorites(
