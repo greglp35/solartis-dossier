@@ -1,0 +1,15 @@
+[
+  {
+    "id": "livraison-demo-001",
+    "deliveryNumber": "LIV-EXEMPLE-001",
+    "clientName": "Client exemple",
+    "status": "planifiee",
+    "priority": "moyenne",
+    "plannedDate": "2026-06-01",
+    "risk": "aucun",
+    "source": "modèle V4",
+    "confidence": "moyen",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z"
+  }
+]

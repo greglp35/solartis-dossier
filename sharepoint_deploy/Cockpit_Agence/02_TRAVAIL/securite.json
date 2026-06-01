@@ -1,0 +1,19 @@
+[
+  {
+    "id": "secu-001",
+    "type": "controle-epi",
+    "titre": "Contrôle EPI dépôt",
+    "description": "Vérification des équipements de protection individuelle en usage au dépôt.",
+    "statut": "a-faire",
+    "priorite": "forte",
+    "responsable": "Chef agence",
+    "dateControle": "",
+    "datePrevue": "2026-06-07",
+    "actionCorrective": "",
+    "source": "init",
+    "confidence": "fort",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  }
+]

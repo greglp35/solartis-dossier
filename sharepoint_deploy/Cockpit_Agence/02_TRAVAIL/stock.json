@@ -1,0 +1,20 @@
+[
+  {
+    "id": "stock-001",
+    "reference": "REF-EXEMPLE-001",
+    "designation": "Exemple article — à remplacer par vos références",
+    "famille": "Gros œuvre",
+    "stockActuel": 0,
+    "stockMini": 10,
+    "stockMaxi": 50,
+    "statut": "rupture",
+    "alerte": true,
+    "fournisseur": "Fournisseur principal",
+    "delaiApprovisionnement": 3,
+    "source": "init",
+    "confidence": "faible",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  }
+]

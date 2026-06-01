@@ -1,0 +1,15 @@
+[
+  {
+    "id": "action-demo-001",
+    "title": "Vérifier les ruptures prioritaires",
+    "description": "Contrôler les références sensibles avant ouverture agence.",
+    "priority": "forte",
+    "status": "a_faire",
+    "owner": "Chef agence",
+    "dueDate": "2026-06-01",
+    "source": "modèle V4",
+    "confidence": "fort",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z"
+  }
+]

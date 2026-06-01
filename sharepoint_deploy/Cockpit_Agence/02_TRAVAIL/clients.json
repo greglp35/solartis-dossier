@@ -1,0 +1,20 @@
+[
+  {
+    "id": "client-001",
+    "nom": "Client exemple",
+    "contact": "",
+    "telephone": "",
+    "email": "",
+    "statut": "actif",
+    "signalCommercial": "neutre",
+    "dernierContact": "2026-05-31",
+    "prochainContact": "",
+    "notes": "Fiche exemple — à remplacer par vos vrais clients.",
+    "priorite": "faible",
+    "source": "init",
+    "confidence": "faible",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  }
+]

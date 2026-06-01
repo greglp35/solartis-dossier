@@ -1,0 +1,20 @@
+[
+  {
+    "id": "stock-demo-001",
+    "sku": "REF-DEMO",
+    "designation": "Article exemple",
+    "family": "Stock",
+    "stockPhysical": 0,
+    "stockReserved": 0,
+    "stockAvailable": 0,
+    "mini": 5,
+    "maxi": 20,
+    "status": "rupture",
+    "priority": "forte",
+    "recommendedAction": "Vérifier besoin de réapprovisionnement",
+    "source": "modèle V4",
+    "confidence": "moyen",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z"
+  }
+]

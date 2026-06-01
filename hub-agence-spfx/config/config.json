@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/core-build/config/2019-03/config.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "hub-agence-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/hubAgence/HubAgenceWebPart.js",
+          "manifest": "./src/webparts/hubAgence/HubAgenceWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {}
+}

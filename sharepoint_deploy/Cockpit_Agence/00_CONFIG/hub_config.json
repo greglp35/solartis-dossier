@@ -1,0 +1,18 @@
+{
+  "appName": "Hub Agence",
+  "version": "4.0.0-spfx-native",
+  "baseFolder": "Cockpit_Agence",
+  "configFolder": "Cockpit_Agence/00_CONFIG",
+  "referentialFolder": "Cockpit_Agence/01_REFERENTIELS",
+  "workFolder": "Cockpit_Agence/02_TRAVAIL",
+  "archiveFolder": "Cockpit_Agence/05_ARCHIVES/sauvegardes",
+  "applicationsFile": "Cockpit_Agence/00_CONFIG/applications.json",
+  "auditFile": "Cockpit_Agence/02_TRAVAIL/journal.json",
+  "defaultLanguage": "fr-FR",
+  "theme": {
+    "primary": "#ffd400",
+    "black": "#111111",
+    "anthracite": "#242424",
+    "background": "#f7f7f7"
+  }
+}

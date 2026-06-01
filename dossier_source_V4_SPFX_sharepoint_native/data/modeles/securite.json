@@ -1,0 +1,16 @@
+[
+  {
+    "id": "securite-demo-001",
+    "title": "Contrôle EPI dépôt",
+    "type": "EPI",
+    "status": "a_verifier",
+    "priority": "forte",
+    "owner": "Chef agence",
+    "risk": "Non-conformité sécurité potentielle",
+    "recommendedAction": "Contrôler le port des EPI et tracer l'action",
+    "source": "modèle V4",
+    "confidence": "fort",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z"
+  }
+]

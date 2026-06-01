@@ -1,0 +1,16 @@
+[
+  {
+    "id": "devis-demo-001",
+    "quoteNumber": "D-EXEMPLE-001",
+    "clientName": "Client exemple",
+    "status": "a_relancer",
+    "priority": "moyenne",
+    "owner": "Comptoir",
+    "lastUpdate": "2026-05-31",
+    "nextAction": "Relancer le client",
+    "source": "modèle V4",
+    "confidence": "moyen",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z"
+  }
+]

@@ -1,0 +1,21 @@
+[
+  {
+    "id": "livraison-001",
+    "numero": "LIV-2026-001",
+    "fournisseur": "Fournisseur exemple",
+    "client": "",
+    "objet": "Livraison exemple",
+    "statut": "prevue",
+    "datePrevue": "2026-06-05",
+    "dateReelle": "",
+    "anomalie": false,
+    "descriptionAnomalie": "",
+    "responsable": "Dépôt",
+    "priorite": "faible",
+    "source": "init",
+    "confidence": "faible",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  }
+]

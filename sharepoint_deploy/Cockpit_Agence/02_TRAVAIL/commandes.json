@@ -1,0 +1,22 @@
+[
+  {
+    "id": "commande-001",
+    "numero": "CMD-2026-001",
+    "type": "client",
+    "client": "Client exemple",
+    "fournisseur": "",
+    "objet": "Commande exemple",
+    "montantHT": 0,
+    "statut": "en-attente",
+    "datePrevueLivraison": "",
+    "dateCommande": "2026-05-31",
+    "responsable": "Dépôt",
+    "notes": "Fiche exemple — à remplacer.",
+    "priorite": "faible",
+    "source": "init",
+    "confidence": "faible",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z",
+    "createdBy": "init"
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "project": "Hub Agence SharePoint native V4",
+  "technicalTarget": "SPFx React TypeScript + MSGraphClientV3",
+  "excluded": ["Power Automate", "Webhook", "Manual import/export as main save method", "Secrets in HTML"],
+  "storage": {
+    "type": "SharePoint document library",
+    "format": "JSON files",
+    "baseFolder": "Cockpit_Agence"
+  },
+  "criticalRules": [
+    "No password, token, client secret or ERP credential in code",
+    "SharePoint permissions are the real security layer",
+    "Favorites are per user",
+    "Fournisseurs tab filters by category only",
+    "Favoris tab filters favorites only"
+  ]
+}

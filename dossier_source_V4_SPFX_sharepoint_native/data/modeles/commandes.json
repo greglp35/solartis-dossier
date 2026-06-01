@@ -1,0 +1,14 @@
+[
+  {
+    "id": "commande-demo-001",
+    "orderNumber": "CDE-EXEMPLE-001",
+    "label": "Commande exemple",
+    "status": "en_attente",
+    "priority": "moyenne",
+    "owner": "Dépôt",
+    "source": "modèle V4",
+    "confidence": "moyen",
+    "createdAt": "2026-05-31T00:00:00.000Z",
+    "updatedAt": "2026-05-31T00:00:00.000Z"
+  }
+]
